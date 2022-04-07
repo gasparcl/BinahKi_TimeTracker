@@ -1,0 +1,41 @@
+{% extends 'core/base.html' %}
+
+{% block title %}{{ equipe.nome }} | {% endblock %}
+
+{% block content %}
+<nav class="breadcrumb" aria-label="breadcrumbs">
+    <ul>
+        <li><a href="#">Dashboard</a></li>
+        <li><a href="{% url 'meu_perfil' %}">Meu perfil</a></li>
+        <li class="is-active"><a href="{% url 'equipe:equipe' equipe.id %}" aria-current="page">{{ equipe.nome }}</a></li>
+    </ul>
+</nav>
+
+<div class="columns is-multiline" id="equipe-app">
+    <div class="column is-4">
+        <h1 class="title">{{ equipe.nome }}</h1>
+
+        <hr>
+
+        <h2 class="subtitle mt-6">Membros</h2>
+
+        {% for membro in equipe.membros.all %}
+            <p>{{ membro.username }}</p>
+        {% endfor %}
+    </div>
+    
+    {% if equipe.criado_por == request.user %}
+        <div class="column is-12">
+            <hr>
+
+            <h3 class="subtitle">Ações de Criador</h3>
+
+            <a href="{% url 'equipe:edita' %}" class="button is-warning">
+                <span class="icon"><i class="far fa-edit"></i></span>
+                <span>Editar equipe</span>
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+{% endblock %}

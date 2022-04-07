@@ -1,0 +1,88 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Meu perfil | {% endblock %}
+
+{% block content %}
+
+<nav class="breadcrumb" aria-label="breadcrumbs">
+    <ul>
+        <li><a href="#">Dashboard</a></li>
+        <li class="is-active"><a href="{% url 'meu_perfil' %}" aria-current="page">Meu perfil</a></li>
+    </ul>
+</nav>
+
+<div class="columns">
+    <div class="column is-6">
+        <div class="media mb-4">
+            <div class="media-left">
+
+            </div>
+
+            <div class="media-content">
+                <p class="title is-3">Olá, {% firstof user.get_full_name user.username %}</p>
+                <p class="subtitle is-6">E-mail: {{ user.email }}</p>
+            </div>
+        </div>
+
+        <a href="{% url 'edita_perfil' %}" class="button is-info">
+            <span class="icon"><i class="far fa-edit"></i></span>
+            <span>Editar perfil</span>
+        </a>
+        <a href="{% url 'logout' %}" class="button is-danger">
+            <span class="icon"><i class="fas fa-sign-out-alt"></i></span>
+            <span>Logout</span>
+        </a>
+    </div>
+</div>
+
+<hr>
+
+<div class="columns">
+    <div class="column is-12">
+        <h2 class="subtitle">Equipes</h2>
+
+        <a href="{% url 'equipe:adiciona' %}" class="button is-success">
+            <span class="icon"><i class="fa-solid fa-plus"></i></span>
+            <span>Criar equipe</span>
+        </a>
+    </div>
+</div>
+
+<div class="columns">
+    {% if equipe_ativa %}
+        <div class="column is-4">
+            <div class="notification has-background-success-light">
+                <h3 class="is-size-5">{{ equipe_ativa.nome }} {% if equipe_ativa.criado_por == request.user %}(Criador){% else %}(Membro){% endif %}</h3>
+
+                <hr>
+
+                <a href="{% url 'equipe:equipe' equipe_ativa.id %}" class="button is-success">
+                    <span class="icon"><i class="fa-solid fa-magnifying-glass"></i></span>
+                    <span>Detalhes</span>
+                </a>
+
+            </div>
+        </div>
+    {% endif %}
+
+    {% for equipe in equipes %}
+        <div class="column is-4">
+            <div class="notification">
+                <h3 class="is-size-5">{{ equipe.nome }} {% if equipe.criado_por == request.user %}(Criador){% else %}(Membro){% endif %}</h3>
+
+                <hr>
+
+                <a href="{% url 'equipe:equipe' equipe.id %}" class="button is-success">
+                    <span class="icon"><i class="fa-solid fa-magnifying-glass"></i></span>
+                    <span>Detalhes</span>
+                </a>
+                <a href="{% url 'equipe:ativa_equipe' equipe.id %}" class="button is-info">
+                    <span class="icon"><i class="fa-regular fa-square-check"></i></span>
+                    <span>Ativar</span>
+                </a>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+
+{% endblock %}

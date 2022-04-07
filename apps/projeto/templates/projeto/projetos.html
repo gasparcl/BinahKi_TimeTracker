@@ -1,0 +1,112 @@
+{% extends 'core/base.html' %}
+
+{% load dashboardextras %}
+
+{% block title %}Projetos | {% endblock %}
+
+{% block content %}
+<div id="projetos-app">
+    <nav class="breadcrumb" aria-label="breadcrumbs">
+        <ul>
+            <li><a href="#">Dashboard</a></li>
+            <li class="is-active"><a href="" aria-current="page">Projetos</a></li>
+        </ul>
+    </nav>
+
+    <div class="columns">
+        <div class="column is-4">
+            <h1 class="title">Projetos</h1>
+
+            <a @click="mostraAddProjetoModal = !mostraAddProjetoModal" class="button is-success">
+                <span class="icon"><i class="fa-solid fa-plus"></i></span>
+                <span>Criar projeto</span>
+            </a>
+        </div>
+    </div>
+
+    <div class="columns">
+        {% for projeto in projetos %}
+            <div class="column is-3">
+                <div class="notification">
+                    <h2 class="is-size-5">{{ projeto.nome }}</h2>
+                    <p class="is-size-7">Tempo registrado: {{ projeto.tempo_registrado|formata_tempo }}</p>
+                    <p class="is-size-7">Tarefas: {{ projeto.num_tarefas_pendentes }}</p>
+
+                    <hr>
+
+                    <a href="{% url 'projeto:projeto' projeto.id %}" class="button is-success">
+                        <span class="icon"><i class="fa-solid fa-magnifying-glass"></i></span>
+                        <span>Detalhes</span>
+                    </a>
+                </div>
+            </div>
+            {% empty %}
+                <div class="column is-3">
+                    <div class="notification">
+                        Nenhum projeto encontrado...
+                    </div>
+                </div>
+        {% endfor %}
+    </div>
+
+    <div class="modal" :class="{'is-active': mostraAddProjetoModal}">
+        <div class="modal-background"></div>
+
+        <form method="post" action="." @submit="validaForm">
+            {% csrf_token %}
+
+            <div class="modal-card">
+                <div class="modal-card-head">
+                    <div class="modal-card-title">Cria projeto</div>
+                </div>
+
+                <div class="modal-card-body">
+                    <div class="field">
+                        <label>Nome</label>
+                        <div class="control">
+                            <input type="text" id="id_nome" class="input" name="nome" v-model="nome">
+                        </div>
+                    </div>
+
+                    <div class="notification is-danger" v-if="showError">
+                        O nome do projeto é obrigatório!
+                    </div>
+
+                    <footer class="modal-card-foot">
+                        <button class="button is-success"><i class="fa-solid fa-floppy-disk mr-1"></i>Salvar</button>
+                        <button class="button" @click="mostraAddProjetoModal = !mostraAddProjetoModal">Cancelar</button>
+                    </footer>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const ProjetosApp = {
+        data() {
+            return {
+                mostraAddProjetoModal: false,
+                nome: '',
+                showError: false
+            }
+        },
+        delimiters: ['[[',']]'],
+        methods: {
+            validaForm(e) {
+                if(this.nome) {
+                    return true
+                }
+
+                this.showError = true
+                e.preventDefault()
+                return false
+            }
+        }
+    }
+
+    Vue.createApp(ProjetosApp).mount('#projetos-app')
+</script>
+{% endblock %}

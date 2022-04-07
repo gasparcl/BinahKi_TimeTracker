@@ -1,0 +1,8 @@
+.is-bluebg{
+    background: rgb(122, 203, 228);
+}
+
+.show {
+	text-transform: uppercase;
+	letter-spacing: 2px;
+}

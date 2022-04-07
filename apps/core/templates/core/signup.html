@@ -1,0 +1,139 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Cadastro | {% endblock %}
+
+{% block content %}
+<section class="hero is-medium is-light is-bold">
+    <div class="hero-body">
+        <div class="container">
+            <h1 class="title">Cadastro</h1>
+            <h2 class="subtitle">Crie sua conta gratuitamente e comece a parametrizar suas próprias atividades e da sua equipe.</h2>
+        </div>
+    </div>
+</section>
+
+<div class="columns" id="signup-app">
+    <div class="column is-6 is-offset-3">
+        <form action="." method="post" class="mt-6" v-on:submit='validaForm' novalidate>
+            {% csrf_token %}
+    
+            {% if form.errors %}
+                <div class="notification is-danger">
+                    {{ form.non_field_errors }}
+    
+                    {% for field in form %}
+                        {% if field.errors %}{{ field.label }}: {{ field.errors|striptags }}{% endif %}
+                    {% endfor %}
+                </div>
+            {% endif %}
+            
+            <div class="notification is-danger" v-if="errors.length">
+                <p v-for="error in errors">
+                    [[ error ]]
+                </p>
+            </div>
+    
+            <div class="field">
+                <label>E-mail</label>
+    
+                <div class="control">
+                    <input type="email" name="username" id="id_username" class="input" v-model="username">
+                </div>
+            </div>
+    
+            <div class="field">
+                <label>Senha</label>
+    
+                <div class="control">
+                    <input type="password" name="password1" id="id_password1" class="input" v-model="password1">
+                </div>
+            </div>
+    
+            <div class="field">
+                <label>Repetir senha</label>
+    
+                <div class="control">
+                    <input type="password" name="password2" id="id_password2" class="input" v-model="password2">
+                </div>
+            </div>
+    
+            <ul class="password-help-text">
+                <li v-if="password1.length < 8">Sua senha deve conter ao menos 8 caracteres</li>
+            </ul>
+    
+            <div class="field">
+                <div class="control">
+                    <button class="button is-success">
+                        <span class="icon"><i class="fa-solid fa-user-plus"></i></span>
+                        <span>Cadastrar</span>
+                    </button>
+                </div>
+            </div>
+        </form>
+
+        <hr>
+
+        <h2 class="subtitle">Já possui sua conta?</h2>
+
+        <a href="{% url 'login' %}" class="is-flex">
+            <span class="icon"><i class="fa-solid fa-arrow-right-to-bracket"></i></span>
+            <span>Clique aqui para logar</span>
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const SignupApp = {
+        data() {
+            return {
+                username: '',
+                password1: '',
+                password2: '',
+                errors: [],
+            }
+        },
+
+        delimiters: ['[[', ']]'],
+
+        methods: {
+            validaForm(e) {
+                this.errors = []
+
+                if(!this.validaEmail(this.username)) {
+                    this.errors.push('Seu e-mail não é válido')
+                }
+
+                if(this.password1 === '') {
+                    this.errors.push('Preencha sua senha')
+                }
+
+                if(this.password1.length < 8) {
+                    this.errors.push('Sua senha deve conter ao menos 8 caracteres')
+                }
+
+                if(this.password1 !== this.password2) {
+                    this.errors.push('A senha e confirmação de senha estão diferentes')
+                }
+
+                if(this.errors.length) {
+                    e.preventDefault()
+                    return false
+                } else {
+                    return true
+                }
+            },
+
+            validaEmail(email) {
+                if (/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/.test(email)) {
+                  return true;
+                }
+                return false;
+               }
+        }
+    }
+
+    Vue.createApp(SignupApp).mount('#signup-app');
+</script>
+{% endblock %}

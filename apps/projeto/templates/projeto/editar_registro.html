@@ -1,0 +1,68 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Editar registro | {% endblock %}
+
+{% block content %}
+<div id="projeto-app">
+    <nav class="breadcrumb" aria-label="breadcrumbs">
+        <ul>
+            <li><a href="#">Dashboard</a></li>
+            <li><a href="{% url 'projeto:projetos' %}">Projetos</a></li>
+            <li><a href="{% url 'projeto:projeto' projeto.id %}">{{ projeto.nome }}</a></li>
+            <li class="is-active"><a href="{% url 'projeto:edita_registro' projeto.id tarefa.id registro.id %}" aria-current="page">Editar registro</a></li>
+        </ul>
+    </nav>
+
+    <div class="columns">
+        <div class="column">
+            <h1 class="title">Editar registro</h1>
+        </div>
+    </div>
+
+    <div class="columns">
+        <div class="column is-4">
+            <form action="." method="post">
+                {% csrf_token %}
+
+                <div class="field is-grouped">
+                    <div class="control">
+                        <div class="select">
+                            <select name="horas">
+                                <option value="0" {% if horas == 0 %} selected {% endif %}>0h</option>
+                                {% for i in "x"|rjust:"23" %}
+                                    <option value="{{ forloop.counter }}" {% if horas == forloop.counter %} selected {% endif %}>{{ forloop.counter }}h</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="control">
+                        <div class="select">
+                            <select name="minutos">
+                                <option value="0" {% if minutos == 0 %} selected {% endif %}>0m</option>
+                                {% for i in "x"|rjust:"59" %}
+                                    <option value="{{ forloop.counter }}" {% if minutos == forloop.counter %} selected {% endif %}>{{ forloop.counter }}m</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label>Data</label>
+
+                    <div class="control">
+                        <input type="date" id="id_data" name="data" class="input" value="{{ registro.criado_em|date:'Y-m-d' }}" placeholder="yyyy-mm-dd">
+                    </div>
+                </div>
+
+                <div class="field">
+                    <div class="control">
+                        <button class="button is-success"><i class="fa-solid fa-floppy-disk mr-1"></i>Salvar alterações</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

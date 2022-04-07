@@ -1,0 +1,68 @@
+{% extends 'core/base.html' %}
+
+{% load static %}
+
+{% block title %}Home | {% endblock %}
+
+{% block content %}
+<section class="hero is-medium is-light is-bold">
+    <div class="hero-body">
+        <div class="container">
+            <h1 class="title">Bem-vindo ao BinahKI Timetracker</h1>
+            <h2 class="subtitle">Inicie a contagem e parametrização de suas atividades</h2>
+        </div>
+    </div>
+</section>
+
+<div class="container">
+    <div class="columns">
+        <div class="column is-8 is-offset-2">
+            <div class="columns is-align-items mt-6">
+                <div class="column is-4 image">
+                    <img src="{% static 'images/timetracker.jpg' %}">
+                </div>
+
+                <div class="column is-8 text">
+                    <h2 class="subtitle">Analise seus indicadores</h2>
+
+                    <p>Realize o login e contabilize sua atividade.</p>
+                </div>
+            </div>
+
+            <div class="columns is-align-items mt-6">
+                <div class="column is-8 text">
+                    <h2 class="subtitle">Aprimore sua produtividade</h2>
+
+                    <p>Realize o login e contabilize sua atividade.</p>
+                </div>
+
+                <div class="column is-4 image">
+                    <img src="{% static 'images/features-happyboss.jpg' %}">
+                </div>
+            </div>
+
+            <div class="columns is-align-items mt-6">
+                <div class="column is-4 image">
+                    <img src="{% static 'images/features-team.jpg' %}">
+                </div>
+
+                <div class="column is-8 text">
+                    <h2 class="subtitle">Controle sua equipe</h2>
+
+                    <p>Realize o login e contabilize a atividade de sua equipe.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="columns is-align-items-center mt-6">
+        <div class="column is-4 is-offset-4 has-text-centered">
+            <h2 class="subtitle">Vamos começar? É gratuito!</h2>
+
+            <a href="{% url 'cadastro' %}" class="button is-success is-large">
+                <span class="icon"><i class="fa-solid fa-user-plus"></i></span>
+                <span>Crie sua conta</span>
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

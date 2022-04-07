@@ -1,0 +1,57 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Editar tarefa | {% endblock %}
+
+{% block content %}
+<div id="projeto-app">
+    <nav class="breadcrumb" aria-label="breadcrumbs">
+        <ul>
+            <li><a href="#">Dashboard</a></li>
+            <li><a href="{% url 'projeto:projetos' %}">Projetos</a></li>
+            <li><a href="{% url 'projeto:projeto' projeto.id %}">{{ projeto.nome }}</a></li>
+            <li class="is-active"><a href="{% url 'projeto:edita_tarefa' projeto.id tarefa.id %}" aria-current="page">Editar tarefa</a></li>
+        </ul>
+    </nav>
+
+    <div class="columns">
+        <div class="column">
+            <h1 class="title">Editar tarefa</h1>
+        </div>
+    </div>
+
+    <div class="columns">
+        <div class="column is-4">
+            <form method="post" action=".">
+                {% csrf_token %}
+
+                <div class="field">
+                    <label>Nome</label>
+
+                    <div class="control">
+                        <input type="text" name="nome" class="input" id="id_nome" value="{{ tarefa.nome }}">
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label>Status</label>
+
+                    <div class="control">
+                        <div class="select">
+                            <select name="status" id="id_status">
+                                <option value="Pendente"{% if tarefa.status == 'Pendente' %} selected{% endif %}>Pendente</option>
+                                <option value="Finalizada"{% if tarefa.status == 'Finalizada' %} selected{% endif %}>Finalizada</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <div class="control">
+                        <button class="button is-success"><i class="fa-solid fa-floppy-disk mr-1"></i>Salvar alterações</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

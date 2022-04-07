@@ -1,0 +1,196 @@
+{% extends 'core/base.html' %}
+
+{% load dashboardextras %}
+
+{% block title %}Dashboard | {% endblock %}
+
+{% block content %}
+<div class="columns is-multiline">
+    <div class="column is-6">
+        <div class="notification">
+            <h2 class="subtitle">Seus registros {% if num_days is 0 %}hoje{% else %}em {{ data_usuario|date:"d-m-Y" }}{% endif %}</h2>
+
+            {% if registros_data %}
+                <table class="table is-fullwidth" style="text-align: left;">
+                    <thead>
+                        <tr>
+                            <td>Tarefa</td>
+                            <td>Projeto</td>
+                            <td>Tempo</td>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for registro in registros_data %}
+                            <tr>
+                                <td>{{ registro.tarefa.nome }}</td>
+                                <td>{{ registro.projeto.nome }}</td>
+                                <td>{{ registro.minutos|formata_tempo }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+
+                    <tfoot>
+                        <tr>
+                            <td colspan="2">Total</td>
+                            <td>{{ registros_de_usuario_e_data|formata_tempo }}</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            {% else %}
+                <p class="block">Não há registros nesta data</p>
+            {% endif %}
+
+            <a href="?num_days={{ num_days|add:'1' }}" class="mt-4">Dia Anterior</a>
+            {% if num_days > 0 %}
+            <a href="?num_days={{ num_days|add:'-1' }}" class="mt-4">Próximo Dia</a>
+            {% endif %}
+
+        </div>
+    </div>
+
+    <div class="column is-6">
+        <div class="notification">
+            <h2 class="subtitle">Seus registros {% if num_meses_usuario is 0 %}este mês {% else %}em {{ mes_usuario|date:"m-Y" }}{% endif %}</h2>
+
+            {% if registros_de_usuario_e_mes %}
+            <table class="table is-fullwidth" style="text-align: left;">
+                <thead>
+                    <tr>
+                        <td>Projeto</td>
+                        <td>Tempo</td>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for projeto in todos_projetos %}
+                        {% if projeto.registros_de_usuario_e_projeto_e_mes %}
+                            <tr>
+                                <td>{{ projeto.nome }}</td>
+                                <td>{{ projeto.registros_de_usuario_e_projeto_e_mes|formata_tempo }}</td>
+                            </tr>
+                        {% endif %}
+                    {% endfor %}
+                </tbody>
+
+                <tfoot>
+                    <tr>
+                        <td>Total</td>
+                        <td>{{ registros_de_usuario_e_mes|formata_tempo }}</td>
+                    </tr>
+                </tfoot>
+            </table>
+        {% else %}
+            <p class="block">Não há registros neste mês</p>
+        {% endif %}
+
+        <a href="?num_meses_usuario={{ num_meses_usuario|add:'1' }}" class="mt-4">Mẽs Anterior</a>
+        {% if num_meses_usuario > 0 %}
+        <a href="?num_meses_usuario={{ num_meses_usuario|add:'-1' }}" class="mt-4">Próximo Mês</a>
+        {% endif %}
+        </div>
+    </div>
+
+    <div class="column is-6">
+        <div class="notification">
+            <h2 class="subtitle">Seus registros abandonados</h2>
+
+            <table class="table is-fullwidth" style="text-align: left;">
+                <thead>
+                    <tr>
+                        <th>Iniciado</th>
+                        <th>Tempo</th>
+                        <th>Status</th>
+                        <th>Adicionar à tarefa</th>
+                        <th>Descartar</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for registro in registros_abandonados %}
+                        <tr>
+                            <td>{{ registro.criado_em }}</td>
+                            <td>
+                                {% if registro.minutos == 0 %}
+                                    {{ registro.minutes_since|formata_tempo }}
+                                {% else %}
+                                    {{ registro.minutos|formata_tempo }}
+                                {% endif %}
+                            </td>
+                            <td>{% if registro.minutos == 0 %}Em progresso{% else %}Abandonado{% endif %}</td>
+                            <td><a href="{% url 'projeto:adiciona_registro' registro.id %}">Adicionar à tarefa</a></td>
+                            <td><a href="{% url 'projeto:exclui_registro_abandonado' registro.id %}">Descartar registro</a></td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {% if request.user == equipe.criado_por %}
+        <div class="column is-6">
+            <div class="notification">
+                <h2 class="subtitle">Sua equipe {% if num_meses_equipe is 0 %}este mês{% else %}{{ mes_equipe|date:"m-Y" }}{% endif %}</h2>
+
+                {% if registros_de_equipe_e_mes > 0 %}
+                    <table class="table is-fullwidth" style="text-align: left;">
+                        <thead>
+                            <tr>
+                                <td>Nome</td>
+                                <td>Tempo</td>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            {% for membro in membros %}
+                                <tr>
+                                    <td>{% firstof membro.get_full_name member.username %}</td>
+                                    <td>{{ membro.registros_de_usuario_e_equipe_e_mes|formata_tempo }} </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <p class="block">Não há registros em sua equipe neste mês</p>
+                {% endif %}
+
+                <a href="?num_meses_equipe={{ num_meses_equipe|add:'1' }}" class="mt-4">Mês Anterior</a>
+                {% if num_meses_equipe > 0 %}
+                <a href="?num_meses_equipe={{ num_meses_equipe|add:'-1' }}" class="mt-4">Próximo Mês</a>
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
+
+</div>
+
+<div class="columns is-multiline">
+    <div class="column is-12">
+        <h2 class="subtitle">Projetos mais recentes</h2>
+    </div>
+
+    {% for projeto in projetos %}
+        <div class="column is-3">
+            <div class="notification">
+                <h2 class="is-size-5">{{ projeto.nome }}</h2>
+
+                <p class="is-size-7">Tempo registrado: {{ projeto.tempo_registrado|formata_tempo }}</p>
+                <p class="is-size-7">Tarefas: {{ projeto.num_tarefas_pendentes }}</p>
+
+                <hr>
+
+                <a href="{% url 'projeto:projeto' projeto.id %}" class="button is-info">
+                    <span class="icon"><i class="fa-solid fa-magnifying-glass"></i></span>
+                    <span>Detalhes</span>
+                </a>
+            </div>
+        </div>
+    {% empty %}
+        <div class="column is-3">
+            <div class="notification">
+                <p>Não há projetos criados</p>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,150 @@
+{% extends 'core/base.html' %}
+
+{% block title %}{{ projeto.nome }} | {% endblock %}
+
+{% block content %}
+<div id="projeto-app">
+    <nav class="breadcrumb" aria-label="breadcrumbs">
+        <ul>
+            <li><a href="#">Dashboard</a></li>
+            <li><a href="{% url 'projeto:projetos' %}">Projetos</a></li>
+            <li class="is-active"><a href="{% url 'projeto:projeto' projeto.id %}" aria-current="page">{{ projeto.nome }}</a></li>
+        </ul>
+    </nav>
+
+    <div class="columns">
+        <div class="column">
+            <h1 class="title">{{ projeto.nome }}</h1>
+
+            <div class="buttons">
+                <a @click="mostraAddTarefaModal = !mostraAddTarefaModal" class="button is-success">
+                    <span class="icon"><i class="fa-solid fa-plus"></i></span>
+                    <span>Criar tarefa</span>
+                </a>
+                <a href="{% url 'projeto:edita_projeto' projeto.id %}" class="button is-warning">
+                    <span class="icon"><i class="far fa-edit"></i></span>
+                    <span>Editar projeto</span>
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    {% if not tarefas_pendentes and not tarefas_finalizadas %}
+        <div class="columns">
+            <div class="column is-3">
+                <div class="notification">
+                    <p>Não há tarefas registradas</p>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <div class="columns is-multiline">
+        {% if tarefas_pendentes %}
+            <div class="column is-12">
+                <h2 class="is-size-4">Tarefas Pendentes</h2>
+            </div>
+
+            {% for tarefa in tarefas_pendentes %}
+                <div class="column is-4">
+                    <div class="notification">
+                        <h3 class="is-size-5">{{ tarefa.nome }}</h3>
+
+                        <p>Tempo registrado: {{ tarefa.tempo_registrado }} minutos</p>
+
+                        <hr>
+
+                        <a href="{% url 'projeto:tarefa' projeto.id tarefa.id %}" class="button is-success">
+                            <span class="icon"><i class="fa-solid fa-magnifying-glass"></i></span>
+                            <span>Detalhes</span>
+                        </a>
+                    </div>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        {% if tarefas_finalizadas %}
+        <div class="column is-12">
+            <h2 class="is-size-4">Tarefas Finalizadas</h2>
+        </div>
+
+        {% for tarefa in tarefas_finalizadas %}
+            <div class="column is-4">
+                <div class="notification">
+                    <h3 class="is-size-5">{{ tarefa.nome }}</h3>
+
+                    <p>Tempo registrado: {{ tarefa.tempo_registrado }} minutos</p>
+
+                    <hr>
+
+                    <a href="{% url 'projeto:tarefa' projeto.id tarefa.id %}" class="button is-success">
+                        <span class="icon"><i class="fa-solid fa-magnifying-glass"></i></span>
+                        <span>Detalhes</span>
+                    </a>
+                </div>
+            </div>
+        {% endfor %}
+    {% endif %}
+    </div>
+
+    <div class="modal" :class="{'is-active': mostraAddTarefaModal}">
+        <div class="modal-background"></div>
+
+        <form action="." method="post" @submit="validaForm">
+            {% csrf_token %}
+
+            <div class="modal-card">
+                <div class="modal-card-head">
+                    <div class="modal-card-title">Cria tarefa</div>
+                </div>
+
+                <div class="modal-card-body">
+                    <div class="field">
+                        <label>Nome</label>
+                        <div class="control">
+                            <input type="text" id="id_nome" class="input" name="nome" v-model="nome">
+                        </div>
+                    </div>
+
+                    <div class="notification is-danger" v-if="showError">
+                        O nome da tarefa é obrigatório!
+                    </div>
+
+                    <footer class="modal-card-foot">
+                        <button class="button is-success"><i class="fa-solid fa-floppy-disk mr-1"></i>Salvar</button>
+                        <button class="button" @click="mostraAddTarefaModal = !mostraAddTarefaModal">Cancelar</button>
+                    </footer>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const ProjetoApp = {
+        data() {
+            return {
+                mostraAddTarefaModal: false,
+                nome: '',
+                showError: false
+            }
+        },
+        delimiters: ['[[',']]'],
+        methods: {
+            validaForm(e) {
+                if(this.nome) {
+                    return true
+                }
+
+                this.showError = true
+                e.preventDefault()
+                return false
+            }
+        }
+    }
+
+    Vue.createApp(ProjetoApp).mount('#projeto-app')
+</script>
+{% endblock %}

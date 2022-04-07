@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <!-- Meta -->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Title -->
+    <title>{% block title %}{% endblock %}BinahKI - TimeTracker</title>
+
+    <!-- CSS files -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/bulma@0.9.1/css/bulma.min.css">
+    <link rel="stylesheet" href="../../../../static/assets/style.css">
+    <link rel="shortcut icon" href="../../../../static/images/favicon.png" type="image/x-icon">
+
+</head>
+<body>
+    <!-- Navbar -->
+    <div id="navbar-app">
+        <nav class="navbar is-bluebg">
+            <div class="navbar-brand">
+                <a href="{% url 'frontpage' %}" class="navbar-item show">
+                    <img src="../../../../static/images/logo.png" alt="logo">
+                    <strong>BinahKI-Timetracker</strong>
+                </a>
+            </div>
+
+            <div class="navbar-menu">
+                <div class="navbar-end">
+                    {% if request.user.is_authenticated %}
+                        <a href="{%url 'dashboard' %}" class="navbar-item">
+                            <span class="icon"><i class="fa-solid fa-chart-column"></i></span>
+                            <span>Dashboard</span>
+                        </a>
+                        <a href="{% url 'projeto:projetos' %}" class="navbar-item">
+                            <span class="icon"><i class="fa-solid fa-layer-group"></i></span>
+                            <span>Projetos</span>
+                        </a>
+
+                        <div class="navbar-item" v-if="!trackingTime">
+                            <div class="buttons">
+                                <a class="button is-success" @click="startTimer()">
+                                    <span class="icon"><i class="fas fa-stopwatch"></i></span>
+                                    <span>Iniciar</span>
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="navbar-item" v-else>
+                            <div class="buttons">
+                                <a class="button is-warning" @click="stopTimer()">
+                                    <span class="icon"><i class="fas fa-stopwatch"></i></span>
+                                    <span>[[ readableSeconds ]] (parar)</span>
+                                </a>
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <div class="navbar-item">
+                        <div class="buttons">
+                            {% if request.user.is_authenticated %}
+                                <a href="{% url 'meu_perfil' %}" class="button is-success">
+                                    <span class="icon"><i class="fas fa-user"></i></span>
+                                    <span>{% firstof request.user.get_full_name request.user.username %}{% if equipe_ativa %} ({{ equipe_ativa.nome }}){% endif %}</span>
+                                </a>
+                            {% else %}
+                                <a href="{% url 'cadastro' %}" class="button is-success">
+                                    <span class="icon"><i class="fa-solid fa-user-plus"></i></span>
+                                    <span><strong>Cadastro</strong></span>
+                                </a>
+                                <a href="{% url 'login' %}" class="button">
+                                    <span class="icon"><i class="fa-solid fa-arrow-right-to-bracket"></i></span>
+                                    <span>Login</span>
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <div class="modal" :class="{'is-active': showTrackingModal}">
+            <div class="modal-background"></div>
+
+            <div class="modal-card">
+                <div class="modal-card-head">
+                    <p class="modal-card-title">Tempo registrado</p>
+                </div>
+
+                <div class="modal-card-body">
+                    <p>Você registrou [[ readableSeconds ]]</p>
+                </div>
+
+                <footer class="modal-card-foot">
+                    <button class="button is-primary" @click="addToTask()">Adicionar à tarefa</button>
+                    <button class="button is-success" @click="addLater()">Adicionar depois</button>
+                    <button class="button is-danger" @click="discardTimer()">Descartar registro</button>
+                </footer>
+            </div>
+        </div>
+    </div>
+    <!-- Navbar-end -->
+
+    <!-- Main -->
+    <section class="section">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="notification is-info">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+
+        {% block content %}
+        {% endblock %}
+    </section>    
+    <!-- End-Main -->
+
+    <!-- Footer -->
+    <footer class="footer is-bluebg">
+        <div class="columns is-multiline">
+            <div class="column is-4">
+                <h2 class="subtitle">BinahKI-Timetracker</h2>
+            </div>
+            <div class="column is-offset-6 is-2">
+                <ul>
+                    <li><a href="#">Contato</a></li>
+                    <li><a href="{% url 'privacidade' %}">Política de privacidade</a></li>
+                    <li><a href="{% url 'termos' %}">Termos de uso</a></li>
+                </ul>
+            </div>
+            <div class="column is-12 has-text-centered">
+                <p class="is-flex is-justify-content-center"> 
+                    <span>Todos os direitos reservados à BinahKI & Lucas G Carvalho</span>
+                    <span class="icon"><i class="fa-regular fa-copyright"></i></span>
+                </p>
+            </div>
+        </div>
+    </footer>
+    <!-- End-Footer -->
+    
+    <!-- Scripts -->
+    <script src="https://use.fontawesome.com/releases/v6.1.1/js/all.js"></script>
+    <script src="https://unpkg.com/vue@next"></script>
+    <script>
+        var NavbarApp = {
+            data() {
+                return {
+                    seconds: {{ registro_ativo_segundos }},
+                    trackingTime: false,
+                    showTrackingModal: false,
+                    timer: null,
+                    entryID: 0,
+                    startTime: '{{ tempo_inicio }}'
+                }
+            },
+            delimiters: ['[[', ']]'],
+            methods: {
+                startTimer() {
+                    fetch('/dashboard/projetos/api/start_timer/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        }
+                    })
+                    .then((response) => {
+                        return response.json()
+                    })
+                    .then((result) => {
+                        this.startTime = new Date()
+                        this.trackingTime = true
+                        
+                        this.timer = setInterval(()=> {
+                            this.seconds = (new Date() - this.startTime) / 1000
+                        }, 1000)
+                    })
+                },
+                stopTimer() {
+                    fetch('/dashboard/projetos/api/stop_timer/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        }
+                    })
+                    .then((response) => {
+                        return response.json()
+                    })
+                    .then((result)=> {
+                        this.entryID = result.entryID
+                        this.showTrackingModal = true
+                        this.trackingTime = false
+
+                        window.clearTimeout(this.timer)
+                    })
+                },
+                discardTimer() {
+                    fetch('/dashboard/projetos/api/discard_timer/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        }
+                    })
+                    .then((response) => {
+                        this.seconds = 0
+                        this.showTrackingModal = false
+                    })
+                },
+                addLater() {
+                    this.seconds = 0
+                    this.showTrackingModal = false
+                },
+                addToTask() {
+                    window.location.href = '/dashboard/projetos/adiciona_registro/' + this.entryID + '/'
+                }
+            },
+            mounted() {
+                if (this.seconds !== 0) {
+                    this.trackingTime = true
+                    this.timer = setInterval(() => {
+                        this.seconds = (new Date() - new Date(this.startTime)) / 1000
+                    }, 1000)
+                }
+            },
+            computed: {
+                readableSeconds() {
+                    const d = Number(this.seconds);
+                    const h = Math.floor(d / 3600);
+                    const m = Math.floor(d % 3600 / 60);
+                    const s = Math.floor(d % 3600 % 60);
+
+                    const hDisplay = h > 0 ? h + (h == 1 ? "h, " : "h, ") : "";
+                    const mDisplay = m > 0 ? m + (m == 1 ? "m, " : "m, ") : "";
+                    const sDisplay = s >= 0 ? s + (s == 1 ? "s" : "s") : "";
+
+                    return hDisplay + mDisplay + sDisplay;
+                }
+            }
+        }
+
+        Vue.createApp(NavbarApp).mount('#navbar-app')
+    </script>
+    {% block scripts %}
+    {% endblock %}
+    <!-- End-Scripts -->
+</body>
+</html>

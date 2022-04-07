@@ -1,0 +1,77 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Criar equipe | {% endblock %}
+
+{% block content %}
+<nav class="breadcrumb" aria-label="breadcrumbs">
+    <ul>
+        <li><a href="#">Dashboard</a></li>
+        <li><a href="{% url 'meu_perfil' %}">Meu perfil</a></li>
+        <li class="is-active"><a href="{% url 'equipe:adiciona' %}" aria-current="page">Criar equipe</a></li>
+    </ul>
+</nav>
+
+<div class="columns" id="equipe-app">
+    <div class="column is-4">
+        <h1 class="title">Criar equipe</h1>
+
+        <form action="." method="post" @submit="validaForm">
+            {% csrf_token %}
+
+            <div class="field">
+                <label>Nome</label>
+
+                <div class="control">
+                    <input type="text" name="nome" id="id_nome" class="input" v-model="nome">
+                </div>
+            </div>
+
+            <div class="notification is-danger" v-if="errors.length">
+                <p v-for="error in errors">[[ error ]]</p>
+            </div>
+
+            <div class="field">
+                <div class="control">
+                    <button class="button is-success">
+                        <span class="icon"><i class="fa-solid fa-plus"></i></span>
+                        <span>Criar equipe</span>
+                    </button>
+                </div>
+            </div>
+
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const EquipeApp = {
+    data () {
+        return {
+            nome: '',
+            errors: []
+        }
+    },
+    delimiters: ['[[',']]'],
+    methods: {
+        validaForm(e) {
+            this.errors = []
+
+            if (this.nome) {
+                return true
+            }
+
+            e.preventDefault()
+
+            this.errors.push('O nome da equipe é obrigatório')
+
+            return false
+        }
+    }
+}
+
+Vue.createApp(EquipeApp).mount('#equipe-app')
+
+</script>
+{% endblock %}

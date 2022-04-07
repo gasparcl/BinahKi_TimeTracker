@@ -1,0 +1,66 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Login | {% endblock %}
+
+{% block content %}
+<section class="hero is-medium is-light is-bold">
+    <div class="hero-body">
+        <div class="container">
+            <h1 class="title">Login</h1>
+            <h2 class="subtitle">Acesse sua conta e comece a parametrizar suas próprias atividades e da sua equipe.</h2>
+        </div>
+    </div>
+</section>
+
+<div class="columns" id="signup-app">
+    <div class="column is-6 is-offset-3">
+        <form action="." method="post" class="mt-6">
+            {% csrf_token %}
+    
+            {% if form.errors %}
+                <div class="notification is-danger">
+                    {{ form.non_field_errors }}
+    
+                    {% for field in form %}
+                        {% if field.errors %}{{ field.label }}: {{ field.errors|striptags }}{% endif %}
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <div class="field">
+                <label>E-mail</label>
+    
+                <div class="control">
+                    <input type="email" name="username" id="id_username" class="input">
+                </div>
+            </div>
+    
+            <div class="field">
+                <label>Senha</label>
+    
+                <div class="control">
+                    <input type="password" name="password" id="id_password" class="input">
+                </div>
+            </div>
+    
+            <div class="field">
+                <div class="control">
+                    <button class="button is-success">
+                        <span class="icon"><i class="fa-solid fa-arrow-right-to-bracket"></i></span>
+                        <span>Login</span>
+                    </button>
+                </div>
+            </div>
+        </form>
+
+        <hr>
+
+        <h2 class="subtitle">Não possui uma conta?</h2>
+
+        <a href="{% url 'cadastro' %}" class="is-flex">
+            <span class="icon"><i class="fa-solid fa-user-plus"></i></span>
+            <span>Crie sua conta</span>
+        </a>
+    </div>
+</div>
+{% endblock %}

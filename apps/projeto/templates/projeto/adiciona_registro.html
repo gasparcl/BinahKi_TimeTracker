@@ -1,0 +1,131 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Adicionar registro | {% endblock %}
+
+{% block content %}
+    <nav class="breadcrumb" aria-label="breadcrumbs">
+        <ul>
+            <li><a href="{% url 'dashboard' %}">Dashboard</a></li>
+            <li><a href="{% url 'projeto:projetos' %}">Projetos</a></li>
+            <li class="is-active"><a href="{% url 'projeto:adiciona_registro' registro.id %}" aria-current="page">Adicionar registro</a></li>
+        </ul>
+    </nav>
+
+    <div class="columns" id="track-entry-app">
+        <div class="column">
+            <h1 class="title">Adicionar registro</h1>
+
+            <form method="post" action=".">
+                {% csrf_token %}
+
+                <div class="field">      
+                    <label>Projeto</label>
+
+                    <div class="control">
+                        <div class="select">
+                            <select name="projeto" v-model="projeto" v-on:change="getTasks()">
+                                <option value="">Selecione o projeto</option>
+                                {% for projeto in projetos %}
+                                    <option value="{{ projeto.id }}">{{ projeto.nome }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="field">      
+                    <label>Tarefa</label>
+
+                    <div class="control">
+                        <div class="select">
+                            <select name="tarefa" v-model="tarefa">
+                                <option v-for="tarefa in tarefas" v-bind:key="tarefa.id" :value="tarefa.id">[[ tarefa.nome ]]</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <label>Horas e minutos</label>
+
+                <div class="field is-grouped">
+                    <div class="control">
+                        <div class="select">
+                            <select name="horas">
+                                <option value="0"{% if horas == 0 %} selected{% endif %}>0h</option>
+                                {% for i in "x"|rjust:"10" %}
+                                    <option value="{{ forloop.counter }}"{% if horas == forloop.counter %} selected{% endif %}>{{ forloop.counter }}h</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="control">
+                        <div class="select">
+                            <select name="minutos">
+                                <option value="0"{% if minutos == 0 %} selected{% endif %}>0m</option>
+                                {% for i in "x"|rjust:"59" %}
+                                    <option value="{{ forloop.counter }}"{% if minutos == forloop.counter %} selected{% endif %}>{{ forloop.counter }}m</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label>Data</date>
+
+                    <div class="control">
+                        <input type="date" id="id_date" class="input" name="data" value="{{ registro.criado_em|date:"d-m-Y" }}" placeholder="dd-mm-YYYY">
+                    </div>
+                </div>
+
+                <div class="field">
+                    <div class="control">
+                        <button class="button is-success">Salvar</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const TrackEntryApp = {
+        data() {
+            return {
+                tarefas: [
+                    {'id': '', 'nome': 'Selecione o projeto'}
+                ],
+                projeto: '',
+                tarefa: ''
+            }
+        },
+        delimiters: ['[[', ']]'],
+        methods: {
+            getTasks() {
+                if (this.projeto !== '') {
+                    fetch('/dashboard/projetos/api/get_tasks/?projeto_id=' + this.projeto, {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    .then((response) => {
+                        return response.json()
+                    })
+                    .then((result) => {
+                        this.tarefas = result.tarefas
+                        this.tarefas.unshift({'id': '', 'nome': 'Selecione a tarefa'})
+                    })
+                } else {
+                    this.tarefas = [{'id': '', 'nome': 'Selecione um projeto'}]
+                    this.tarefa = ''
+                }
+            },
+        }
+    }
+
+    Vue.createApp(TrackEntryApp).mount('#track-entry-app')
+</script>
+{% endblock %}
